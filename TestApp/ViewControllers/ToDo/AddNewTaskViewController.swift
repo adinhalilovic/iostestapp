@@ -9,8 +9,8 @@
 import UIKit
 import CoreData
 
-class AddNewTaskViewController: UIViewController {
-
+class AddNewTaskViewController: UIViewController{
+   
     enum PickerType {
         case Date
         case Time
@@ -108,6 +108,8 @@ class AddNewTaskViewController: UIViewController {
         
         do {
             try managedContext.save()
+            self.dismiss(animated: true, completion: nil)
+            NotificationCenter.default.post(name: NSNotification.Name(rawValue: "load"), object: nil)
         } catch let error as NSError {
             print("Could not save.")
         }

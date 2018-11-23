@@ -9,6 +9,10 @@
 import UIKit
 import CoreData
 
+protocol ToDoViewControllerDelegate {
+    var onRefresh: () -> Void { get set }
+}
+
 class ToDoViewController: UIViewController {
 
     @IBOutlet weak var btnAdd: UIButton!
@@ -16,16 +20,18 @@ class ToDoViewController: UIViewController {
     
     var tasks: [TaskModel] = []
     
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         tableView.delegate = self
         tableView.dataSource = self
         commonInit()
-        loadData()
+        loadData()        
     }
     
     func commonInit() {
         tableView.register(UINib(nibName: "TaskCell", bundle: nil), forCellReuseIdentifier: "TaskCell")
+        NotificationCenter.default.addObserver(self, selector: #selector(reloadTable), name: NSNotification.Name(rawValue: "load"), object: nil)
     }
     
     func loadData() {
@@ -33,18 +39,23 @@ class ToDoViewController: UIViewController {
         let managedContext = appDelegate.persistentContainer.viewContext
         
         let tasksFetch = NSFetchRequest<NSFetchRequestResult>(entityName: "Tasks")
-        
-        
-        
+        tasks = []
         do {
             let result = try managedContext.fetch(tasksFetch) as! [Tasks]
             result.forEach{ task in
                 tasks.append(TaskModel(title: task.title, description: task.task_desc, isDone: task.task_done))
             }
+            tasks.reverse()
         } catch let error as NSError {
             print("Error: \(error.localizedDescription)")
         }
     }
+    
+    @objc func reloadTable() {
+        loadData()
+        self.tableView.reloadData()
+    }
+    
     // MARK: Actions
     @IBAction func btnAddPressed(_ sender: Any) {
         
